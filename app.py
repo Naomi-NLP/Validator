@@ -9,7 +9,7 @@ st.title("📘 English–Yorùbá Glossary Validator")
 # Config
 # -----------------------------
 ADMIN_PASSWORD = "143admin78"
-GITHUB_URL = "https://raw.githubusercontent.com/<username>/<repo>/main/your_glossary.csv"
+GITHUB_URL = "https://raw.githubusercontent.com/Naomi-NLP/Validator/refs/heads/main/hiv_aids_glossary.csv"
 WORKING_FILE = "validated_glossary.csv"  # This is your "new CSV container"
 
 # -----------------------------
