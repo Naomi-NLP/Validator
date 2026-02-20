@@ -79,20 +79,32 @@ else:
             translation = st.text_area("TRANSLATION", row.get("TRANSLATION", ""), height=150)
 
         # -----------------------------
-        # 5️⃣ Save validated row
-        # -----------------------------
-        if st.button("💾 Save this row"):
-            new_row = pd.DataFrame([{
-                "S/N": sn,
-                "SOURCE": source,
-                "DEFINITION": definition,
-                "YORÙBÁ": yoruba,
-                "TRANSLATION": translation
-            }])
-            # Append to validated container
-            st.session_state.validated_df = pd.concat([st.session_state.validated_df, new_row], ignore_index=True)
-            st.session_state.validated_df.to_csv(VALIDATED_FILE, index=False)
-            st.success(f"Row {sn} saved to validated container ✅")
+# Save validated row (fixed)
+# -----------------------------
+if st.button("💾 Save this row"):
+    new_row = pd.DataFrame([{
+        "S/N": sn,
+        "SOURCE": source,
+        "DEFINITION": definition,
+        "YORÙBÁ": yoruba,
+        "TRANSLATION": translation
+    }])
+
+    # Check if S/N already exists in validated_df
+    existing_index = st.session_state.validated_df.index[
+        st.session_state.validated_df['S/N'].astype(str) == str(sn)
+    ].tolist()
+
+    if existing_index:
+        # Replace the existing row
+        st.session_state.validated_df.loc[existing_index[0]] = new_row.iloc[0]
+    else:
+        # Append as new row
+        st.session_state.validated_df = pd.concat([st.session_state.validated_df, new_row], ignore_index=True)
+
+    # Save to CSV
+    st.session_state.validated_df.to_csv(VALIDATED_FILE, index=False)
+    st.success(f"Row {sn} saved/updated in validated container ✅")
 
             # -----------------------------
             # Move to next unvalidated row
