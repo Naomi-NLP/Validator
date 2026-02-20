@@ -29,6 +29,7 @@ if not st.session_state.logged_in:
             st.success("✅ Logged in!")
         else:
             st.error("❌ Wrong username or password")
+
 else:
     st.success("✅ Logged in as admin")
 
@@ -46,27 +47,25 @@ else:
     else:
         validated_df = pd.DataFrame(columns=original_df.columns)
 
-    # Store validated_df in session
     st.session_state.validated_df = validated_df
 
     # -----------------------------
     # 3️⃣ Track next row index
     # -----------------------------
     if "current_index" not in st.session_state:
-        # Determine first unvalidated row
-        validated_indices = validated_df['S/N'].astype(int).tolist()
-        unvalidated_df = original_df[~original_df['S/N'].astype(int).isin(validated_indices)]
+        validated_indices = validated_df['S/N'].astype(str).tolist()
+        unvalidated_df = original_df[~original_df['S/N'].astype(str).isin(validated_indices)]
         if len(unvalidated_df) > 0:
             st.session_state.current_index = unvalidated_df.index[0]
         else:
-            st.session_state.current_index = None  # All rows validated
+            st.session_state.current_index = None
 
+    # -----------------------------
+    # 4️⃣ Show current row
+    # -----------------------------
     if st.session_state.current_index is None:
         st.success("🎉 All rows validated!")
     else:
-        # -----------------------------
-        # 4️⃣ Show row to validate
-        # -----------------------------
         row = original_df.loc[st.session_state.current_index]
 
         col1, col2 = st.columns(2)
@@ -79,43 +78,37 @@ else:
             translation = st.text_area("TRANSLATION", row.get("TRANSLATION", ""), height=150)
 
         # -----------------------------
-# Save validated row (fixed)
-# -----------------------------
-if st.button("💾 Save this row"):
-    new_row = pd.DataFrame([{
-        "S/N": sn,
-        "SOURCE": source,
-        "DEFINITION": definition,
-        "YORÙBÁ": yoruba,
-        "TRANSLATION": translation
-    }])
+        # 5️⃣ Save validated row
+        # -----------------------------
+        if st.button("💾 Save this row"):
+            new_row = pd.DataFrame([{
+                "S/N": sn,
+                "SOURCE": source,
+                "DEFINITION": definition,
+                "YORÙBÁ": yoruba,
+                "TRANSLATION": translation
+            }])
 
-    # Check if S/N already exists in validated_df
-    existing_index = st.session_state.validated_df.index[
-        st.session_state.validated_df['S/N'].astype(str) == str(sn)
-    ].tolist()
+            # Replace if S/N exists, else append
+            existing_index = st.session_state.validated_df.index[
+                st.session_state.validated_df['S/N'].astype(str) == str(sn)
+            ].tolist()
 
-    if existing_index:
-        # Replace the existing row
-        st.session_state.validated_df.loc[existing_index[0]] = new_row.iloc[0]
-    else:
-        # Append as new row
-        st.session_state.validated_df = pd.concat([st.session_state.validated_df, new_row], ignore_index=True)
+            if existing_index:
+                st.session_state.validated_df.loc[existing_index[0]] = new_row.iloc[0]
+            else:
+                st.session_state.validated_df = pd.concat([st.session_state.validated_df, new_row], ignore_index=True)
 
-    # Save to CSV
-    st.session_state.validated_df.to_csv(VALIDATED_FILE, index=False)
-    st.success(f"Row {sn} saved/updated in validated container ✅")
+            st.session_state.validated_df.to_csv(VALIDATED_FILE, index=False)
+            st.success(f"Row {sn} saved/updated in validated container ✅")
 
-            # -----------------------------
-            # Move to next unvalidated row
-            # -----------------------------
-            validated_indices = st.session_state.validated_df['S/N'].astype(int).tolist()
-            unvalidated_df = original_df[~original_df['S/N'].astype(int).isin(validated_indices)]
+            # Move to next row
+            validated_indices = st.session_state.validated_df['S/N'].astype(str).tolist()
+            unvalidated_df = original_df[~original_df['S/N'].astype(str).isin(validated_indices)]
             if len(unvalidated_df) > 0:
                 st.session_state.current_index = unvalidated_df.index[0]
             else:
                 st.session_state.current_index = None
-                st.success("🎉 All rows validated!")
 
         # -----------------------------
         # 6️⃣ Navigation buttons
