@@ -9,7 +9,7 @@ st.title("📘 English–Yorùbá Glossary Validator")
 # -----------------------------
 github_url = st.text_input(
     "Enter GitHub CSV Raw URL",
-    "https://raw.githubusercontent.com/<username>/<repo>/main/your_glossary.csv"
+    "https://raw.githubusercontent.com/Naomi-NLP/Validator/refs/heads/main/hiv_aids_glossary.csv"
 )
 
 df = None
