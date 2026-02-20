@@ -38,19 +38,17 @@ else:
     # -----------------------------
     if "original_df" not in st.session_state:
         st.session_state.original_df = pd.read_csv(GITHUB_URL)
-
     original_df = st.session_state.original_df
 
-    # Validated container (new container)
+    # Validated container
     if os.path.exists(VALIDATED_FILE):
         validated_df = pd.read_csv(VALIDATED_FILE)
     else:
         validated_df = pd.DataFrame(columns=original_df.columns)
-
     st.session_state.validated_df = validated_df
 
     # -----------------------------
-    # 3️⃣ Track next row index
+    # 3️⃣ Track current row index
     # -----------------------------
     if "current_index" not in st.session_state:
         validated_indices = validated_df['S/N'].astype(str).tolist()
@@ -66,7 +64,16 @@ else:
     if st.session_state.current_index is None:
         st.success("🎉 All rows validated!")
     else:
-        row = original_df.loc[st.session_state.current_index]
+        # Load saved edits if available
+        sn_current = str(original_df.loc[st.session_state.current_index, "S/N"])
+        existing_row = st.session_state.validated_df[
+            st.session_state.validated_df['S/N'].astype(str) == sn_current
+        ]
+
+        if not existing_row.empty:
+            row = existing_row.iloc[0]  # use saved edits
+        else:
+            row = original_df.loc[st.session_state.current_index]  # use original
 
         col1, col2 = st.columns(2)
         with col1:
@@ -102,7 +109,7 @@ else:
             st.session_state.validated_df.to_csv(VALIDATED_FILE, index=False)
             st.success(f"Row {sn} saved/updated in validated container ✅")
 
-            # Move to next row
+            # Move to next unvalidated row
             validated_indices = st.session_state.validated_df['S/N'].astype(str).tolist()
             unvalidated_df = original_df[~original_df['S/N'].astype(str).isin(validated_indices)]
             if len(unvalidated_df) > 0:
